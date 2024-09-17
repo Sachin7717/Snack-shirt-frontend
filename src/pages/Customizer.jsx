@@ -9,6 +9,8 @@ import { downloadCanvasToImage, reader } from '../config/helpers';
 import { EditorTabs, FilterTabs, DecalTypes } from '../config/constants';
 import { fadeAnimation, slideAnimation } from '../config/motion';
 import { AIPicker, ColorPicker, CustomButton, FilePicker, Tab } from '../components';
+import axios from 'axios'
+
 
 const Customizer = () => {
   const snap = useSnapshot(state);
@@ -52,20 +54,31 @@ const Customizer = () => {
 
     try {
       setGeneratingImg(true);
-
-      const response = await fetch('http://localhost:8080/api/v1/dalle', {
+      const response = await axios(https://api.limewire.com/api/image/generation, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-Api-Version': 'v1',
+          Accept: 'application/json',
+          Authorization: 'Bearer lmwr_sk_clfsHxiItt_3f6RyVqIj07X1F6yQCcmIKYxeKISyHcPUO5cZ',
         },
-        body: JSON.stringify({
+        data: JSON.stringify({
           prompt,
+          aspect_ratio: '1:1'
         })
-      })
+      });
+      
+      
+      
+        console.log(response);
 
-      const data = await response.json();
+      let data = await response.json();
+      data=data.data;
+      console.log(data)
 
-      handleDecals(type, `data:image/png;base64,${data.photo}`)
+
+
+      handleDecals(data[0].type, data:${data[0].type};base64,${data[0].asset_url});
     } catch (error) {
       alert(error)
     } finally {
