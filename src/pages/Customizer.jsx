@@ -54,7 +54,7 @@ const Customizer = () => {
 
     try {
       setGeneratingImg(true);
-      const response = await axios(https://api.limewire.com/api/image/generation, {
+      const response = await axios('https://api.limewire.com/api/image/generation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ const Customizer = () => {
 
 
 
-      handleDecals(data[0].type, data:${data[0].type};base64,${data[0].asset_url});
+      handleDecals(data[0].type, `data:${data[0].type};base64,${data[0].asset_url}`);
     } catch (error) {
       alert(error)
     } finally {
