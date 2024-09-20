@@ -27,7 +27,7 @@ const Customizer = () => {
   const snap = useSnapshot(state);
 
   const [file, setFile] = useState('');
-  const [images,setImages]=useState(null);
+  const [images,setImages]=useState([]);
   const [prompt, setPrompt] = useState('');
   const [generatingImg, setGeneratingImg] = useState(false);
 
@@ -65,15 +65,38 @@ const Customizer = () => {
 
     try {
       setGeneratingImg(true);
-      const response = await unsplash.search.getPhotos({
-        query: `${prompt}`,
-        page: 1,
-        perPage: 10,
-        orientation: 'portrait',
-      });
-      setImages(response.response.results);
-      const data = response.response.results[0].urls.raw;
-      handleDecals(type, data);
+
+      try {
+        const dataToSend = {prompt}
+      const resp = await axios("https://utility-backend-r4iz.onrender.com/get-ai-image",{
+        method:"POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: JSON.stringify(dataToSend)
+        
+      })
+     console.log(resp)
+      const aiImageUrl=resp.data.aiImage.data[0].asset_url
+      console.log(aiImageUrl)
+      images.push(aiImageUrl);
+      setImages((prev)=>[...prev,aiImageUrl]);
+      handleDecals(type, aiImageUrl);
+        
+      } catch (error) {
+        const response = await unsplash.search.getPhotos({
+          query: `${prompt}`,
+          page: 1,
+          perPage: 10,
+          orientation: 'portrait',
+        });
+        setImages(response.response.results);
+        const data = response.response.results[0].urls.raw;
+        handleDecals(type, data);
+      }
+      
+
+
     } catch (error) {
       alert(error)
     } finally {
@@ -178,10 +201,10 @@ const Customizer = () => {
             className='absolute z-10 bottom-14 right-0 left-0 w-full flex justify-center items-center flex-wrap gap-4'
           >
 
-            { images &&
+            { images[0] &&
               images.map((image,index) => (
                 <div className='h-10 w-10 rounded-md bg-black' key={index}>
-                  <img src={image.urls.raw} alt="" className='h-10 w-10' onClick={() => handleDecals("full", image.urls.raw)}/>
+                  <img src={image.urls?.raw || image} alt="" className='h-10 w-10' onClick={() => handleDecals("full", image.urls?.raw || image)}/>
                   </div>
               ))
             }
