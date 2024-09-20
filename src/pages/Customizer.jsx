@@ -10,13 +10,24 @@ import { EditorTabs, FilterTabs, DecalTypes } from '../config/constants';
 import { fadeAnimation, slideAnimation } from '../config/motion';
 import { AIPicker, ColorPicker, CustomButton, FilePicker, Tab } from '../components';
 import axios from 'axios'
+// server
+// import fetch from 'node-fetch';
+// global.fetch = fetch;
+import { createApi } from 'unsplash-js';
 
 
+const unsplash = createApi({
+  accessKey: 'SJujHcf0gG50yX_XsQ0xXS5Y-sZsjefsTxRxRIYTQtI',
+  fetch,
+});
+
+
+// URL = require('url').URL;
 const Customizer = () => {
   const snap = useSnapshot(state);
 
   const [file, setFile] = useState('');
-
+  const [images,setImages]=useState(null);
   const [prompt, setPrompt] = useState('');
   const [generatingImg, setGeneratingImg] = useState(false);
 
@@ -54,31 +65,15 @@ const Customizer = () => {
 
     try {
       setGeneratingImg(true);
-      const response = await axios('https://api.limewire.com/api/image/generation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Api-Version': 'v1',
-          Accept: 'application/json',
-          Authorization: 'Bearer lmwr_sk_clfsHxiItt_3f6RyVqIj07X1F6yQCcmIKYxeKISyHcPUO5cZ',
-        },
-        data: JSON.stringify({
-          prompt,
-          aspect_ratio: '1:1'
-        })
+      const response = await unsplash.search.getPhotos({
+        query: `${prompt}`,
+        page: 1,
+        perPage: 10,
+        orientation: 'portrait',
       });
-      
-      
-      
-        console.log(response);
-
-      let data = await response.json();
-      data=data.data;
-      console.log(data)
-
-
-
-      handleDecals(data[0].type, `data:${data[0].type};base64,${data[0].asset_url}`);
+      setImages(response.response.results);
+      const data = response.response.results[0].urls.raw;
+      handleDecals(type, data);
     } catch (error) {
       alert(error)
     } finally {
@@ -179,6 +174,19 @@ const Customizer = () => {
               />
             ))}
           </motion.div>
+          <motion.div
+            className='absolute z-10 bottom-14 right-0 left-0 w-full flex justify-center items-center flex-wrap gap-4'
+          >
+
+            { images &&
+              images.map((image,index) => (
+                <div className='h-10 w-10 rounded-md bg-black' key={index}>
+                  <img src={image.urls.raw} alt="" className='h-10 w-10' onClick={() => handleDecals("full", image.urls.raw)}/>
+                  </div>
+              ))
+            }
+          </motion.div>
+      
         </>
       )}
     </AnimatePresence>
